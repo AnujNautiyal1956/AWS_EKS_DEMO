@@ -1,4 +1,0 @@
-kubectl scale deployment frontend --replicas=5
-
-#####scale down
-kubectl scale deployment frontend --replicas=2

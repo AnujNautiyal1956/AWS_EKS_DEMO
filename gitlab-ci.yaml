@@ -1,0 +1,78 @@
+image:
+  name: '##Dickerimagename:latest'
+stages:
+    - Infra-plan
+    - Infra-Provision
+    - nginx-ingress-installation
+    - namespace-Guestbook creation-installation
+    - Applicaton Expose
+    - Pod-Autoscaler
+before_script:
+    - 'terraform -v'
+    - 'Export'
+    - "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
+    - "export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
+
+Infrastructure-planning phase:
+only: 
+    - master
+ stage: Infra-plan
+ script:
+    - 'cd /ClusterConfig'
+    - 'terraform init -backend=true'
+    - 'terraform plan'
+ tags:
+    - AWS
+Infrastructure-provisioning  phase:
+only: 
+    - master
+ stage: Infra-Provision
+ script:
+    - 'cd /ClusterConfig'
+    - 'terraform init'
+    - 'terraform plan'
+    - 'terraform refresh'
+    - 'terraform apply -auto-approve'
+Nginx-ingress-controlller:
+ only: 
+    - master   
+ stage: nginx-ingress-installation
+ script:
+    - 'cd /Nginx-Ingress-controller/'
+    - 'kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/aws/service-l7.yaml'
+    - 'kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/aws/patch-configmap-l7.yaml'
+tags:
+    - AWS
+Namespace-Guestbook-Creation-installation:
+ only: 
+    - master   
+ stage: namespace-Guestbook creation-installation
+ script:
+    - 'cd /Guestbook-php-Application'
+    - 'kubectl create -f production_namespace.yaml'
+    - 'kubectl create -f staging_namepsace.yaml'
+    - 'kubectl apply -f https://k8s.io/examples/application/guestbook/redis-master-deployment.yaml'
+    - 'kubectl apply -f https://k8s.io/examples/application/guestbook/redis-master-service.yaml'
+    - 'kubectl apply -f https://k8s.io/examples/application/guestbook/redis-slave-deployment.yaml'
+    - 'kubectl apply -f https://k8s.io/examples/application/guestbook/redis-slave-service.yaml'
+    - 'kubectl apply -f https://k8s.io/examples/application/guestbook/frontend-deployment.yaml'
+    - 'kubectl apply -f https://k8s.io/examples/application/guestbook/frontend-service.yaml'
+tags:
+    - AWS
+Application-Expose:
+ only: 
+    - master   
+ stage: Application-Expose
+    - 'cd /Guestbook-php-Application'
+    - 'kubectl expose deployment staging-expose --type=LoadBalancer --name=frontend'
+    - 'kubectl expose deployment production-expose --type=LoadBalancer --name=frontend'
+
+Pod-Autoscaling:
+ only: 
+    - master   
+ stage: Pod-Autoscaler
+ script:
+    - 'cd /Pod-Autoscaling-CPU-Utilization'
+    - 'kubectl autoscale deployment frontend.demployment.yaml --min=2 --max=5 --cpu-percent=80'
+tags:
+    - AWS    
