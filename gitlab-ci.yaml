@@ -1,5 +1,5 @@
 image:
-  name: '##Dickerimagename:latest'
+  name: '##Dockerimagename:latest'
 stages:
     - Infra-plan
     - Infra-Provision
