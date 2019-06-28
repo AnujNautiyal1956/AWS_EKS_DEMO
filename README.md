@@ -41,6 +41,22 @@ The runner has not been registered as of now to carry out the process of CI/CD
 Also the Docker image has not been explicitly defined in the imagename block of gilab-ci.yaml
 Both these things are WIP
 
+# Considerations
+## Add on componenets for Cluster Management and Monitoring
+Web Dashboard(UI)
+
+Prometheus- Which can also act as a data source for Grafana and can be visualized using the Grafana UI
+
+## Method to install Nginx and Demo application
+Both the two componenets have been installed using the K8's official documentation of using the Redis master and slave architecture and then using a frontend-service.yaml web frontend serving the HTTP requests written in PHP.
+The whole process of installtion and Exposure of applications to respective domain names has been done through the gitlab-ci.yaml
+
+## Pod size consideration
+The simple concept of 3W's implies here
+
+Workload mobility,Workload uniformity,Workload elasticity
+
+
 ## References 
 Cluster Configuration Terraform reference - https://github.com/christopherhein/terraform-eks.git
 
